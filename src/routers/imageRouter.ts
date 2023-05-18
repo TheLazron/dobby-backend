@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import { uploadImage } from "../controllers/imageController.js";
 import multer from "multer";
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() });
 // import { logUserIn, signUserUp } from "../controllers/authController.js";
 
 const imageRouter: Router = express.Router();
