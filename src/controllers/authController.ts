@@ -3,6 +3,8 @@ import { PrismaClient, User } from "@prisma/client";
 import { comparePasswords, encryptPassowrd } from "../utils/bcryptUtils.js";
 import type { loginResponse } from "../types/responseTypes.js";
 import { generateAccessToken } from "../utils/jwtUtils.js";
+import errorResponseHandler from "../utils/errorHandler.js";
+import { loginSchema, signUpSchema } from "../schemas/authSchema.js";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +12,9 @@ const signUserUp = async (req: Request, res: Response) => {
   try {
     console.log("req", req.body);
 
-    const { email, password, username } = req.body;
+    const { email, password, username, profileUrl } = signUpSchema.parse(
+      req.body
+    );
 
     const encryptedPass = await encryptPassowrd(password);
     const createdUser = await prisma.user.create({
@@ -22,14 +26,13 @@ const signUserUp = async (req: Request, res: Response) => {
     });
     return res.json({ success: true });
   } catch (error: any) {
-    console.log(error);
+    errorResponseHandler(res, error, "Trouble Signing User In");
   }
 };
 
 const logUserIn = async (req: Request, res: Response<loginResponse>) => {
   try {
-    console.log("req", req.body);
-    const { email, password } = req.body;
+    const { email, password } = loginSchema.parse(req.body);
     const loggedUser = await prisma.user.findFirst({
       where: {
         email: email,
@@ -61,7 +64,7 @@ const logUserIn = async (req: Request, res: Response<loginResponse>) => {
       user: { found: true, token: token, userId: loggedUser.id },
     });
   } catch (error: any) {
-    console.log(error);
+    errorResponseHandler(res, error, "Trouble Signing User In");
   }
 };
 
