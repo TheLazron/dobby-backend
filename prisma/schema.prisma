@@ -19,7 +19,7 @@ model Image {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   imageUrl String @unique
-  userId      String     @map("user_id")
+  userId      String     @map("user_id") @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
   createdOn   DateTime @default(now())
 }

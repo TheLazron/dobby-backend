@@ -1,30 +1,53 @@
 import { NextFunction, Request, Response } from "express";
 import { createClient } from "@supabase/supabase-js";
 import multer from "multer";
+import { PrismaClient, User } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import errorResponseHandler from "../utils/errorHandler.js";
+import uploadImageSupabase from "../utils/supabaseUtils.js";
+import { customResponse } from "../types/responseTypes.js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
 const supabase = createClient(supabaseUrl!, supabaseKey!);
+const prisma = new PrismaClient();
 
-const uploadImage = async (req: Request, res: Response) => {
-  if (req.file) {
-    const file = req.file;
-    console.log("Uploaded image:");
-    console.log(req.file);
-    const { data, error: uploadError } = await supabase.storage
-      .from("image-storage")
-      .upload(uuidv4(), file.buffer, { contentType: file.mimetype });
+const uploadImage = async (req: Request, res: customResponse) => {
+  try {
+    const displayName = req.body.filename;
+    const userId = res.userId;
+    let imageName = uuidv4();
+    const fileName = `${userId}/${imageName}`;
+    if (req.file) {
+      const file = req.file;
+      console.log("Uploaded image:");
+      console.log(req.file);
+      const uploadError = await uploadImageSupabase(file, fileName);
 
-    if (uploadError) {
-      console.log("Error uploading image to Supabase storage:", uploadError);
+      if (!uploadError) {
+        const imageUrl = `${process.env.SUPABASE_UPLOAD_PRE}${userId}/${imageName}`;
+        console.log(imageUrl);
+
+        try {
+          const createdImage = await prisma.image.create({
+            data: {
+              name: displayName,
+              imageUrl: imageUrl,
+              userId: userId!,
+            },
+          });
+          console.log(createdImage);
+          return res.json({ error: null, data: createdImage });
+        } catch (err) {
+          console.log(err);
+        }
+      }
     } else {
-      console.log("Image uploaded successfully to Supabase storage:");
-      //  delete req.file.buffer; // Clear the uploaded file data from memory
+      res.json({ message: "No file Received" });
     }
-  } else {
-    console.log("no file uploaded");
+  } catch (error: any) {
+    errorResponseHandler(error);
   }
 };
 
