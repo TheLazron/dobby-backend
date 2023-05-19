@@ -12,9 +12,7 @@ const signUserUp = async (req: Request, res: Response) => {
   try {
     console.log("req", req.body);
 
-    const { email, password, username, profileUrl } = signUpSchema.parse(
-      req.body
-    );
+    const { email, password, username } = signUpSchema.parse(req.body);
 
     const encryptedPass = await encryptPassowrd(password);
     const createdUser = await prisma.user.create({

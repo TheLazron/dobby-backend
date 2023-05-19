@@ -14,9 +14,12 @@ const supabase = createClient(supabaseUrl!, supabaseKey!);
 const prisma = new PrismaClient();
 
 const uploadImage = async (req: Request, res: customResponse) => {
+  console.log(req.body);
+
   try {
-    const displayName = req.body.filename;
+    const displayName = req.body.fileName;
     const userId = res.userId;
+
     let imageName = uuidv4();
     const fileName = `${userId}/${imageName}`;
     if (req.file) {

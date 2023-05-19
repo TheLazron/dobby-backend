@@ -5,6 +5,7 @@ import authRouter from "./routers/authRouter.js";
 import imageRouter from "./routers/imageRouter.js";
 import { customResponse } from "./types/responseTypes.js";
 import { verifyJWT } from "./utils/jwtUtils.js";
+import userRouter from "./routers/userRouter.js";
 dotenv.config();
 
 const app = express();
@@ -28,6 +29,7 @@ const verifyToken = (req: Request, res: customResponse, next: NextFunction) => {
 };
 app.use(authRouter);
 app.use(verifyToken);
+app.use(userRouter);
 app.use(imageRouter);
 app.listen(process.env.PORT || 3700, () => {
   console.log("Server running on port 3700");
