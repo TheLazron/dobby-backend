@@ -69,4 +69,26 @@ const getMyImages = async (req: Request, res: customResponse) => {
   }
 };
 
-export { uploadImage, getMyImages };
+const searchImagesByName = async (req: Request, res: customResponse) => {
+  try {
+    const userId = res.userId;
+    const searchQ = req.query.searchString;
+
+    // Use a regular expression to perform a case-insensitive search for images with matching names
+    const images = await prisma.image.findMany({
+      where: {
+        userId: userId,
+        name: {
+          contains: searchQ as string,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    res.json({ error: null, data: images });
+  } catch (error: any) {
+    errorResponseHandler(res, error, "Error while retrieving images");
+  }
+};
+
+export { uploadImage, getMyImages, searchImagesByName };
