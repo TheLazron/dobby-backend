@@ -54,4 +54,19 @@ const uploadImage = async (req: Request, res: customResponse) => {
   }
 };
 
-export { uploadImage };
+const getMyImages = async (req: Request, res: customResponse) => {
+  try {
+    const userId = res.userId;
+
+    const userImages = await prisma.image.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    res.json({ error: null, data: userImages });
+  } catch (error: any) {
+    errorResponseHandler(res, error, "Error while retrieving images");
+  }
+};
+
+export { uploadImage, getMyImages };
